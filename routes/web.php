@@ -135,6 +135,8 @@ Route::middleware(['auth'])->prefix('atestia')->name('atestia.')->group(function
         Route::get('/usuarios', [App\Http\Controllers\Atestia\AtestiaUsuarioController::class, 'index'])->name('usuarios.index');
         Route::post('/usuarios', [App\Http\Controllers\Atestia\AtestiaUsuarioController::class, 'store'])->name('usuarios.store');
         Route::patch('/usuarios/{id}/toggle', [App\Http\Controllers\Atestia\AtestiaUsuarioController::class, 'toggle'])->name('usuarios.toggle');
+        Route::patch('/usuarios/{id}/password', [App\Http\Controllers\Atestia\AtestiaUsuarioController::class, 'updatePassword'])->name('usuarios.password');
+        Route::delete('/usuarios/{id}', [App\Http\Controllers\Atestia\AtestiaUsuarioController::class, 'destroy'])->name('usuarios.destroy');
     });
 
     Route::middleware(['permission:atestia.tenants.gestionar'])->prefix('admin')->name('admin.')->group(function () {

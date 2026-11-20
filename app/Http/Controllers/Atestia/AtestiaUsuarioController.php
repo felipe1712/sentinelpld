@@ -15,7 +15,7 @@ class AtestiaUsuarioController extends Controller
         $authUser = auth()->user();
         $isSuper = $authUser->hasRole('super_admin');
 
-        $query = User::with('roles')->latest();
+        $query = User::with(['roles', 'tenant'])->latest();
         if (! $isSuper) {
             $query->where('tenant_id', $authUser->tenant_id);
         }
@@ -69,11 +69,7 @@ class AtestiaUsuarioController extends Controller
     public function toggle(int $id)
     {
         $authUser = auth()->user();
-        $target = User::findOrFail($id);
-
-        if (! $authUser->hasRole('super_admin') && $target->tenant_id !== $authUser->tenant_id) {
-            abort(403);
-        }
+        $target = $this->authorizeTarget($authUser, $id);
 
         if ($target->id === $authUser->id) {
             return back()->with('error', 'No puedes desactivar tu propio usuario.');
@@ -83,5 +79,51 @@ class AtestiaUsuarioController extends Controller
 
         return redirect()->route('atestia.usuarios.index')
             ->with('success', 'Estado del usuario actualizado.');
+    }
+
+    public function updatePassword(Request $request, int $id)
+    {
+        $authUser = auth()->user();
+        $target = $this->authorizeTarget($authUser, $id);
+
+        $data = $request->validate([
+            'password' => 'required|string|min:8',
+        ]);
+
+        $target->update([
+            'password' => Hash::make($data['password']),
+        ]);
+
+        return redirect()->route('atestia.usuarios.index')
+            ->with('success', "Contraseña actualizada para {$target->email}.");
+    }
+
+    public function destroy(int $id)
+    {
+        $authUser = auth()->user();
+        $target = $this->authorizeTarget($authUser, $id);
+
+        if ($target->id === $authUser->id) {
+            return back()->with('error', 'No puedes eliminar tu propio usuario.');
+        }
+
+        $email = $target->email;
+        $target->delete();
+
+        return redirect()->route('atestia.usuarios.index')
+            ->with('success', "Usuario {$email} eliminado.");
+    }
+
+    protected function authorizeTarget(User $authUser, int $id): User
+    {
+        $target = User::findOrFail($id);
+
+        if (! $authUser->hasRole('super_admin')) {
+            if ($target->tenant_id !== $authUser->tenant_id || $target->hasRole('super_admin')) {
+                abort(403);
+            }
+        }
+
+        return $target;
     }
 }

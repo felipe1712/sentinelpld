@@ -5,7 +5,7 @@
 <div class="container-fluid">
     <div class="row m-1">
         <div class="col-12">
-            <h4 class="main-title">Administración Multi-Tenant · Notarías y Clientes</h4>
+            <h4 class="main-title">Notarías y Clientes</h4>
         </div>
     </div>
 

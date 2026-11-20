@@ -264,5 +264,15 @@ class AtestiaComplianceTest extends TestCase
         ])->assertRedirect('/atestia/admin/configuracion');
 
         $this->assertEquals('xkeysib-test-secret', \App\Models\SentinelSystemSetting::getValue('brevo_api_key'));
+
+        // Administrador puede cambiar contraseña y eliminar operador de su propio tenant, pero NO al super_admin
+        $this->actingAs($admin99)->patch("/atestia/usuarios/{$op99->id}/password", [
+            'password' => 'NewSecret123',
+        ])->assertRedirect('/atestia/usuarios');
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('NewSecret123', $op99->fresh()->password));
+
+        $this->actingAs($admin99)->delete("/atestia/usuarios/{$super->id}")->assertStatus(403);
+        $this->actingAs($admin99)->delete("/atestia/usuarios/{$op99->id}")->assertRedirect('/atestia/usuarios');
+        $this->assertDatabaseMissing('users', ['id' => $op99->id]);
     }
 }
