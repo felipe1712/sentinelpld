@@ -38,7 +38,9 @@ class HomeController extends Controller
     {
         if (Auth::check()) {
             $user = Auth::user();
-            if ($user->hasRole('super_admin')) {
+            if ($user->hasAnyRole(['notario', 'representante_encargado', 'coordinador', 'colaborador', 'auditor_ro'])) {
+                return redirect()->route('atestia.dashboard');
+            } elseif ($user->hasRole('super_admin')) {
                 return redirect()->route('superadmin.dashboard');
             } elseif ($user->hasAnyRole(['tenant_admin', 'investigador'])) {
                 return redirect()->route('tenant.dashboard');
@@ -47,7 +49,7 @@ class HomeController extends Controller
                 return redirect()->route('login')->withErrors(['email' => 'Tu usuario no tiene roles asignados en el sistema. Inicia sesión con una cuenta válida.']);
             }
         }
-        return view('landing');
+        return redirect()->route('login');
     }
 
     /*Language Translation*/
