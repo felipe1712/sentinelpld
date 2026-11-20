@@ -130,6 +130,18 @@ Route::middleware(['auth'])->prefix('atestia')->name('atestia.')->group(function
         Route::get('/parametros', [App\Http\Controllers\Atestia\AtestiaParametroController::class, 'index'])->name('parametros.index');
         Route::put('/parametros/{id}', [App\Http\Controllers\Atestia\AtestiaParametroController::class, 'update'])->name('parametros.update');
     });
+
+    Route::middleware(['permission:atestia.usuarios.gestionar'])->group(function () {
+        Route::get('/usuarios', [App\Http\Controllers\Atestia\AtestiaUsuarioController::class, 'index'])->name('usuarios.index');
+        Route::post('/usuarios', [App\Http\Controllers\Atestia\AtestiaUsuarioController::class, 'store'])->name('usuarios.store');
+        Route::patch('/usuarios/{id}/toggle', [App\Http\Controllers\Atestia\AtestiaUsuarioController::class, 'toggle'])->name('usuarios.toggle');
+    });
+
+    Route::middleware(['permission:atestia.tenants.gestionar'])->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/notarias', [App\Http\Controllers\Atestia\AtestiaAdminNotariaController::class, 'index'])->name('notarias.index');
+        Route::post('/notarias', [App\Http\Controllers\Atestia\AtestiaAdminNotariaController::class, 'store'])->name('notarias.store');
+        Route::patch('/notarias/{id}/toggle', [App\Http\Controllers\Atestia\AtestiaAdminNotariaController::class, 'toggle'])->name('notarias.toggle');
+    });
 });
 
 Route::get('/', [App\Http\Controllers\HomeController::class, 'root'])->name('root');

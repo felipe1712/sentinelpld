@@ -214,4 +214,41 @@ class AtestiaComplianceTest extends TestCase
         $report = app(\App\Services\Atestia\AtestiaNotariaEbrService::class)->generateInstitutionalReport($this->notaria);
         $this->assertTrue($report['datos_proyectados']);
     }
+
+    /** Multi-tenant: super_admin crea notaría + administrador, y administrador crea operador aislado */
+    public function test_multitenant_superadmin_and_client_profiles(): void
+    {
+        $super = \App\Models\User::factory()->create(['tenant_id' => null, 'avatar' => 'avatar-1.jpg']);
+        $super->assignRole('super_admin');
+
+        $this->actingAs($super)->post('/atestia/admin/notarias', [
+            'nombre_comercial'   => 'Notaría 99',
+            'rfc'                => 'NPN990101AAA',
+            'titular'            => 'Lic. Ana Ruiz',
+            'tipo_fedatario'     => 'NOTARIO',
+            'perfil_servicio'    => 'pro',
+            'admin_name'         => 'Admin 99',
+            'admin_email'        => 'admin99@sentinelpld.mx',
+            'admin_password'     => 'Secret1234',
+        ])->assertRedirect('/atestia/admin/notarias');
+
+        $admin99 = \App\Models\User::where('email', 'admin99@sentinelpld.mx')->firstOrFail();
+        $this->assertTrue($admin99->hasRole('administrador'));
+
+        // Administrador de cliente NO puede acceder a administración global de notarías
+        $this->actingAs($admin99)->get('/atestia/admin/notarias')->assertStatus(403);
+
+        // Administrador crea Operador en su propio tenant
+        $this->actingAs($admin99)->post('/atestia/usuarios', [
+            'name'     => 'Operador 99',
+            'email'    => 'op99@sentinelpld.mx',
+            'password' => 'Secret1234',
+            'role'     => 'operador',
+        ])->assertRedirect('/atestia/usuarios');
+
+        $op99 = \App\Models\User::where('email', 'op99@sentinelpld.mx')->firstOrFail();
+        $this->assertEquals($admin99->tenant_id, $op99->tenant_id);
+        $this->actingAs($op99)->get('/atestia/avisos')->assertStatus(403);
+        $this->actingAs($op99)->get('/atestia/dashboard')->assertStatus(200);
+    }
 }

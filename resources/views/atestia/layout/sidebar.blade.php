@@ -32,7 +32,7 @@
             <li class="no-sub">
                 <a href="{{ route('atestia.clientes.index') }}">
                     <i class="ti ti-users"></i>
-                    Expediente Único (BC)
+                    Expediente Único
                 </a>
             </li>
 
@@ -46,7 +46,7 @@
                 <li class="no-sub">
                     <a href="{{ route('atestia.alertas.index') }}">
                         <i class="ti ti-bell-ringing"></i>
-                        Alertas (A01–A18)
+                        Alertas
                     </a>
                 </li>
             @endcan
@@ -55,22 +55,40 @@
                 <li class="no-sub">
                     <a href="{{ route('atestia.avisos.index') }}">
                         <i class="ti ti-calendar-due"></i>
-                        Calendario Avisos (Día 17)
+                        Calendario Avisos
                     </a>
                 </li>
             @endcan
 
-            @if(auth()->user()?->can('atestia.auditoria.exportar') || auth()->user()?->can('atestia.parametros.editar'))
+            @if(auth()->user()?->can('atestia.auditoria.exportar') || auth()->user()?->can('atestia.parametros.editar') || auth()->user()?->can('atestia.usuarios.gestionar') || auth()->user()?->can('atestia.tenants.gestionar'))
                 <li class="menu-title">
-                    <span>Gobierno y Auditoría</span>
+                    <span>Administración y Gobierno</span>
                 </li>
             @endif
+
+            @can('atestia.tenants.gestionar')
+                <li class="no-sub">
+                    <a href="{{ route('atestia.admin.notarias.index') }}">
+                        <i class="ti ti-building"></i>
+                        Notarías y Clientes
+                    </a>
+                </li>
+            @endcan
+
+            @can('atestia.usuarios.gestionar')
+                <li class="no-sub">
+                    <a href="{{ route('atestia.usuarios.index') }}">
+                        <i class="ti ti-user-cog"></i>
+                        Usuarios
+                    </a>
+                </li>
+            @endcan
 
             @can('atestia.auditoria.exportar')
                 <li class="no-sub">
                     <a href="{{ route('atestia.auditoria.index') }}">
                         <i class="ti ti-shield-lock"></i>
-                        Auditoría y EBR (M3/M8)
+                        Auditoría y EBR
                     </a>
                 </li>
             @endcan
@@ -79,13 +97,13 @@
                 <li class="no-sub">
                     <a href="{{ route('atestia.cumplimiento.index') }}">
                         <i class="ti ti-certificate"></i>
-                        Cumplimiento Interno (M9)
+                        Cumplimiento Interno
                     </a>
                 </li>
                 <li class="no-sub">
                     <a href="{{ route('atestia.parametros.index') }}">
                         <i class="ti ti-adjustments"></i>
-                        Parámetros (UMA / Anexos)
+                        Parámetros
                     </a>
                 </li>
             @endcan
