@@ -13,3 +13,16 @@
     --warning: 223, 177, 59;
     --info: 36, 114, 145;
 }
+
+nav .main-nav li.sentinel-menu-divider {
+    border-top: 1px solid rgba(11, 66, 41, 0.12);
+    margin: 12px 16px 4px;
+    padding: 0;
+    height: 1px;
+}
+
+nav .main-nav li.menu-title span {
+    white-space: nowrap;
+    letter-spacing: 0.06em;
+    font-size: 11px;
+}

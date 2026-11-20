@@ -29,11 +29,12 @@
                 </li>
                 <li class="no-sub">
                     <a href="{{ route('atestia.usuarios.index') }}">
-                        <i class="ti ti-user-cog"></i>
+                        <i class="ti ti-user"></i>
                         Usuarios
                     </a>
                 </li>
 
+                <li class="sentinel-menu-divider" aria-hidden="true"></li>
                 <li class="menu-title">
                     <span>Sistema</span>
                 </li>
@@ -60,8 +61,9 @@
                     </a>
                 </li>
 
+                <li class="sentinel-menu-divider" aria-hidden="true"></li>
                 <li class="menu-title">
-                    <span>Operación Vulnerable</span>
+                    <span>Operación</span>
                 </li>
                 <li class="no-sub">
                     <a href="{{ route('atestia.actos.index') }}">
@@ -77,8 +79,9 @@
                 </li>
 
                 @if(auth()->user()?->can('atestia.alertas.revisar') || auth()->user()?->can('atestia.avisos.ver'))
+                    <li class="sentinel-menu-divider" aria-hidden="true"></li>
                     <li class="menu-title">
-                        <span>Monitoreo y Avisos</span>
+                        <span>Monitoreo</span>
                     </li>
                 @endif
 
@@ -100,20 +103,12 @@
                     </li>
                 @endcan
 
-                @if(auth()->user()?->can('atestia.auditoria.exportar') || auth()->user()?->can('atestia.parametros.editar') || auth()->user()?->can('atestia.usuarios.gestionar'))
+                @if(auth()->user()?->can('atestia.auditoria.exportar') || auth()->user()?->can('atestia.parametros.editar'))
+                    <li class="sentinel-menu-divider" aria-hidden="true"></li>
                     <li class="menu-title">
-                        <span>Administración y Gobierno</span>
+                        <span>Gobierno</span>
                     </li>
                 @endif
-
-                @can('atestia.usuarios.gestionar')
-                    <li class="no-sub">
-                        <a href="{{ route('atestia.usuarios.index') }}">
-                            <i class="ti ti-user-cog"></i>
-                            Usuarios
-                        </a>
-                    </li>
-                @endcan
 
                 @can('atestia.auditoria.exportar')
                     <li class="no-sub">
@@ -129,6 +124,19 @@
                         <a href="{{ route('atestia.cumplimiento.index') }}">
                             <i class="ti ti-certificate"></i>
                             Cumplimiento Interno
+                        </a>
+                    </li>
+                @endcan
+
+                @can('atestia.usuarios.gestionar')
+                    <li class="sentinel-menu-divider" aria-hidden="true"></li>
+                    <li class="menu-title">
+                        <span>Configuración</span>
+                    </li>
+                    <li class="no-sub">
+                        <a href="{{ route('atestia.usuarios.index') }}">
+                            <i class="ti ti-user"></i>
+                            Usuarios
                         </a>
                     </li>
                 @endcan
