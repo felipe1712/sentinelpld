@@ -88,6 +88,50 @@ Route::middleware(['auth', 'role:tenant_admin|investigador'])->prefix('tenant')-
     )->name('subjects.document.delete');
 });
 
+// ─────────────────────────────────────────────────────────
+// RUTAS ATESTIA — Cumplimiento LFPIORPI (Notarías & Corredores)
+// ─────────────────────────────────────────────────────────
+Route::middleware(['auth'])->prefix('atestia')->name('atestia.')->group(function () {
+    Route::get('/dashboard', [App\Http\Controllers\Atestia\AtestiaDashboardController::class, 'index'])->name('dashboard');
+
+    Route::middleware(['permission:atestia.actos.registrar'])->group(function () {
+        Route::get('/actos', [App\Http\Controllers\Atestia\AtestiaActoController::class, 'index'])->name('actos.index');
+        Route::post('/actos', [App\Http\Controllers\Atestia\AtestiaActoController::class, 'store'])->name('actos.store');
+        Route::post('/actos/{id}/pagos', [App\Http\Controllers\Atestia\AtestiaActoController::class, 'storePago'])->name('actos.pagos.store');
+    });
+
+    Route::middleware(['permission:atestia.expedientes.ver'])->group(function () {
+        Route::get('/clientes', [App\Http\Controllers\Atestia\AtestiaClienteController::class, 'index'])->name('clientes.index');
+        Route::post('/clientes', [App\Http\Controllers\Atestia\AtestiaClienteController::class, 'store'])
+            ->middleware('permission:atestia.expedientes.editar')
+            ->name('clientes.store');
+    });
+
+    Route::middleware(['permission:atestia.alertas.revisar'])->group(function () {
+        Route::get('/alertas', [App\Http\Controllers\Atestia\AtestiaAlertaController::class, 'index'])->name('alertas.index');
+        Route::post('/alertas/{id}/resolve', [App\Http\Controllers\Atestia\AtestiaAlertaController::class, 'resolve'])->name('alertas.resolve');
+    });
+
+    // Avisos y acuses: estrictamente prohibido para colaborador (Art. 63 fr. II LFPIORPI)
+    Route::middleware(['permission:atestia.avisos.ver'])->group(function () {
+        Route::get('/avisos', [App\Http\Controllers\Atestia\AtestiaAvisoController::class, 'index'])->name('avisos.index');
+        Route::post('/avisos/{id}/acuse', [App\Http\Controllers\Atestia\AtestiaAvisoController::class, 'registerAcuse'])
+            ->middleware('permission:atestia.avisos.presentar')
+            ->name('avisos.acuse');
+    });
+
+    Route::middleware(['permission:atestia.auditoria.exportar'])->group(function () {
+        Route::get('/auditoria', [App\Http\Controllers\Atestia\AtestiaAuditoriaController::class, 'index'])->name('auditoria.index');
+    });
+
+    Route::middleware(['permission:atestia.parametros.editar'])->group(function () {
+        Route::get('/cumplimiento', [App\Http\Controllers\Atestia\AtestiaCumplimientoController::class, 'index'])->name('cumplimiento.index');
+        Route::post('/cumplimiento', [App\Http\Controllers\Atestia\AtestiaCumplimientoController::class, 'store'])->name('cumplimiento.store');
+        Route::get('/parametros', [App\Http\Controllers\Atestia\AtestiaParametroController::class, 'index'])->name('parametros.index');
+        Route::put('/parametros/{id}', [App\Http\Controllers\Atestia\AtestiaParametroController::class, 'update'])->name('parametros.update');
+    });
+});
+
 Route::get('/', [App\Http\Controllers\HomeController::class, 'root'])->name('root');
 Route::get('/landing', [App\Http\Controllers\LandingController::class, 'index'])->name('landing');
 Route::post('/contacto', [App\Http\Controllers\LandingController::class, 'storeContact'])->name('contacto.store');
