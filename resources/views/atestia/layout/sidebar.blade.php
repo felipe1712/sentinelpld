@@ -1,7 +1,7 @@
 <nav>
     <div class="app-logo">
-        <a class="logo d-inline-block text-decoration-none fw-bold f-s-18 text-primary" href="{{ route('atestia.dashboard') }}">
-            <i class="ti ti-shield-check me-1"></i> {{ config('app.name') }}
+        <a class="logo d-inline-flex align-items-center text-decoration-none" href="{{ route('atestia.dashboard') }}">
+            <img src="{{ asset('assets/images/logo/sentinel-logo.svg') }}" alt="{{ config('app.name') }}" style="height:36px;width:auto;">
         </a>
 
         <span class="bg-light-primary toggle-semi-nav">

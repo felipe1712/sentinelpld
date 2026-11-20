@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-APP_DIR="/var/www/atestia-notaria"
+APP_DIR="/var/www/sentinelpld"
 cd "$APP_DIR"
 
 echo ">>> Bajando ultimos cambios..."
-git pull origin PLD
+git pull origin main
 
 echo ">>> Instalando dependencias PHP y Node..."
 composer install --no-dev --optimize-autoloader
@@ -21,6 +21,6 @@ php artisan view:cache
 echo ">>> Reiniciando workers..."
 supervisorctl reread
 supervisorctl update
-supervisorctl restart atestia-notaria-worker:*
+supervisorctl restart sentinelpld-worker:*
 
-echo ">>> Deploy completado para notaria.atestia.com.mx"
+echo ">>> Deploy completado para sentinelpld.mx"
