@@ -38,7 +38,9 @@ class HomeController extends Controller
     {
         if (Auth::check()) {
             $user = Auth::user();
-            if ($user->hasAnyRole(['super_admin', 'administrador', 'operador', 'notario', 'representante_encargado', 'coordinador', 'colaborador', 'auditor_ro'])) {
+            if ($user->hasRole('super_admin')) {
+                return redirect()->route('atestia.admin.dashboard');
+            } elseif ($user->hasAnyRole(['administrador', 'operador', 'notario', 'representante_encargado', 'coordinador', 'colaborador', 'auditor_ro'])) {
                 return redirect()->route('atestia.dashboard');
             } elseif ($user->hasAnyRole(['tenant_admin', 'investigador'])) {
                 return redirect()->route('tenant.dashboard');

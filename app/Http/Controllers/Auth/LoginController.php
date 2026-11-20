@@ -26,7 +26,12 @@ class LoginController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/atestia/dashboard';
+    protected function redirectTo(): string
+    {
+        return auth()->user()?->hasRole('super_admin')
+            ? '/atestia/admin/dashboard'
+            : '/atestia/dashboard';
+    }
 
     /**
      * Create a new controller instance.

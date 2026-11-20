@@ -138,9 +138,13 @@ Route::middleware(['auth'])->prefix('atestia')->name('atestia.')->group(function
     });
 
     Route::middleware(['permission:atestia.tenants.gestionar'])->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/dashboard', [App\Http\Controllers\Atestia\SuperAdminDashboardController::class, 'index'])->name('dashboard');
         Route::get('/notarias', [App\Http\Controllers\Atestia\AtestiaAdminNotariaController::class, 'index'])->name('notarias.index');
         Route::post('/notarias', [App\Http\Controllers\Atestia\AtestiaAdminNotariaController::class, 'store'])->name('notarias.store');
         Route::patch('/notarias/{id}/toggle', [App\Http\Controllers\Atestia\AtestiaAdminNotariaController::class, 'toggle'])->name('notarias.toggle');
+        Route::get('/configuracion', [App\Http\Controllers\Atestia\SystemSettingsController::class, 'index'])->name('configuracion.index');
+        Route::post('/configuracion/brevo', [App\Http\Controllers\Atestia\SystemSettingsController::class, 'updateBrevo'])->name('configuracion.brevo');
+        Route::post('/configuracion/brevo/test', [App\Http\Controllers\Atestia\SystemSettingsController::class, 'testBrevo'])->name('configuracion.brevo.test');
     });
 });
 

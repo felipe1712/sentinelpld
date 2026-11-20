@@ -250,5 +250,19 @@ class AtestiaComplianceTest extends TestCase
         $this->assertEquals($admin99->tenant_id, $op99->tenant_id);
         $this->actingAs($op99)->get('/atestia/avisos')->assertStatus(403);
         $this->actingAs($op99)->get('/atestia/dashboard')->assertStatus(200);
+
+        // Super Admin tiene su propio dashboard y configuración Brevo cifrada; cliente recibe 403
+        $this->actingAs($super)->get('/atestia/admin/dashboard')->assertStatus(200);
+        $this->actingAs($admin99)->get('/atestia/admin/dashboard')->assertStatus(403);
+        $this->actingAs($admin99)->get('/atestia/admin/configuracion')->assertStatus(403);
+
+        $this->actingAs($super)->post('/atestia/admin/configuracion/brevo', [
+            'brevo_enabled'      => 1,
+            'brevo_api_key'      => 'xkeysib-test-secret',
+            'brevo_sender_email' => 'notificaciones@sentinelpld.mx',
+            'brevo_sender_name'  => 'Sentinel PLD',
+        ])->assertRedirect('/atestia/admin/configuracion');
+
+        $this->assertEquals('xkeysib-test-secret', \App\Models\SentinelSystemSetting::getValue('brevo_api_key'));
     }
 }

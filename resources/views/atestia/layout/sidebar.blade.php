@@ -1,6 +1,7 @@
 <nav>
     <div class="app-logo">
-        <a class="logo d-inline-flex align-items-center text-decoration-none" href="{{ route('atestia.dashboard') }}">
+        <a class="logo d-inline-flex align-items-center text-decoration-none"
+           href="{{ auth()->user()?->hasRole('super_admin') ? route('atestia.admin.dashboard') : route('atestia.dashboard') }}">
             <img src="{{ asset('assets/images/logo/sentinel-logo.svg') }}" alt="{{ config('app.name') }}" style="height:36px;width:auto;">
         </a>
 
@@ -10,103 +11,128 @@
     </div>
     <div class="app-nav" id="app-simple-bar">
         <ul class="main-nav p-0 mt-2">
-            <li class="menu-title">
-                <span>Principal</span>
-            </li>
-            <li class="no-sub">
-                <a href="{{ route('atestia.dashboard') }}">
-                    <i class="ti ti-dashboard"></i>
-                    Dashboard
-                </a>
-            </li>
-
-            <li class="menu-title">
-                <span>Operación Vulnerable</span>
-            </li>
-            <li class="no-sub">
-                <a href="{{ route('atestia.actos.index') }}">
-                    <i class="ti ti-file-certificate"></i>
-                    Actos e Instrumentos
-                </a>
-            </li>
-            <li class="no-sub">
-                <a href="{{ route('atestia.clientes.index') }}">
-                    <i class="ti ti-users"></i>
-                    Expediente Único
-                </a>
-            </li>
-
-            @if(auth()->user()?->can('atestia.alertas.revisar') || auth()->user()?->can('atestia.avisos.ver'))
+            @if(auth()->user()?->hasRole('super_admin'))
                 <li class="menu-title">
-                    <span>Monitoreo y Avisos</span>
+                    <span>Plataforma</span>
                 </li>
-            @endif
-
-            @can('atestia.alertas.revisar')
                 <li class="no-sub">
-                    <a href="{{ route('atestia.alertas.index') }}">
-                        <i class="ti ti-bell-ringing"></i>
-                        Alertas
+                    <a href="{{ route('atestia.admin.dashboard') }}">
+                        <i class="ti ti-dashboard"></i>
+                        Dashboard
                     </a>
                 </li>
-            @endcan
-
-            @can('atestia.avisos.ver')
-                <li class="no-sub">
-                    <a href="{{ route('atestia.avisos.index') }}">
-                        <i class="ti ti-calendar-due"></i>
-                        Calendario Avisos
-                    </a>
-                </li>
-            @endcan
-
-            @if(auth()->user()?->can('atestia.auditoria.exportar') || auth()->user()?->can('atestia.parametros.editar') || auth()->user()?->can('atestia.usuarios.gestionar') || auth()->user()?->can('atestia.tenants.gestionar'))
-                <li class="menu-title">
-                    <span>Administración y Gobierno</span>
-                </li>
-            @endif
-
-            @can('atestia.tenants.gestionar')
                 <li class="no-sub">
                     <a href="{{ route('atestia.admin.notarias.index') }}">
                         <i class="ti ti-building"></i>
                         Notarías y Clientes
                     </a>
                 </li>
-            @endcan
-
-            @can('atestia.usuarios.gestionar')
                 <li class="no-sub">
                     <a href="{{ route('atestia.usuarios.index') }}">
                         <i class="ti ti-user-cog"></i>
                         Usuarios
                     </a>
                 </li>
-            @endcan
 
-            @can('atestia.auditoria.exportar')
-                <li class="no-sub">
-                    <a href="{{ route('atestia.auditoria.index') }}">
-                        <i class="ti ti-shield-lock"></i>
-                        Auditoría y EBR
-                    </a>
+                <li class="menu-title">
+                    <span>Sistema</span>
                 </li>
-            @endcan
-
-            @can('atestia.parametros.editar')
                 <li class="no-sub">
-                    <a href="{{ route('atestia.cumplimiento.index') }}">
-                        <i class="ti ti-certificate"></i>
-                        Cumplimiento Interno
+                    <a href="{{ route('atestia.admin.configuracion.index') }}">
+                        <i class="ti ti-plug"></i>
+                        Configuración e Integraciones
                     </a>
                 </li>
                 <li class="no-sub">
                     <a href="{{ route('atestia.parametros.index') }}">
                         <i class="ti ti-adjustments"></i>
-                        Parámetros
+                        Parámetros Normativos
                     </a>
                 </li>
-            @endcan
+            @else
+                <li class="menu-title">
+                    <span>Principal</span>
+                </li>
+                <li class="no-sub">
+                    <a href="{{ route('atestia.dashboard') }}">
+                        <i class="ti ti-dashboard"></i>
+                        Dashboard
+                    </a>
+                </li>
+
+                <li class="menu-title">
+                    <span>Operación Vulnerable</span>
+                </li>
+                <li class="no-sub">
+                    <a href="{{ route('atestia.actos.index') }}">
+                        <i class="ti ti-file-certificate"></i>
+                        Actos e Instrumentos
+                    </a>
+                </li>
+                <li class="no-sub">
+                    <a href="{{ route('atestia.clientes.index') }}">
+                        <i class="ti ti-users"></i>
+                        Expediente Único
+                    </a>
+                </li>
+
+                @if(auth()->user()?->can('atestia.alertas.revisar') || auth()->user()?->can('atestia.avisos.ver'))
+                    <li class="menu-title">
+                        <span>Monitoreo y Avisos</span>
+                    </li>
+                @endif
+
+                @can('atestia.alertas.revisar')
+                    <li class="no-sub">
+                        <a href="{{ route('atestia.alertas.index') }}">
+                            <i class="ti ti-bell-ringing"></i>
+                            Alertas
+                        </a>
+                    </li>
+                @endcan
+
+                @can('atestia.avisos.ver')
+                    <li class="no-sub">
+                        <a href="{{ route('atestia.avisos.index') }}">
+                            <i class="ti ti-calendar-due"></i>
+                            Calendario Avisos
+                        </a>
+                    </li>
+                @endcan
+
+                @if(auth()->user()?->can('atestia.auditoria.exportar') || auth()->user()?->can('atestia.parametros.editar') || auth()->user()?->can('atestia.usuarios.gestionar'))
+                    <li class="menu-title">
+                        <span>Administración y Gobierno</span>
+                    </li>
+                @endif
+
+                @can('atestia.usuarios.gestionar')
+                    <li class="no-sub">
+                        <a href="{{ route('atestia.usuarios.index') }}">
+                            <i class="ti ti-user-cog"></i>
+                            Usuarios
+                        </a>
+                    </li>
+                @endcan
+
+                @can('atestia.auditoria.exportar')
+                    <li class="no-sub">
+                        <a href="{{ route('atestia.auditoria.index') }}">
+                            <i class="ti ti-shield-lock"></i>
+                            Auditoría y EBR
+                        </a>
+                    </li>
+                @endcan
+
+                @can('atestia.parametros.editar')
+                    <li class="no-sub">
+                        <a href="{{ route('atestia.cumplimiento.index') }}">
+                            <i class="ti ti-certificate"></i>
+                            Cumplimiento Interno
+                        </a>
+                    </li>
+                @endcan
+            @endif
         </ul>
     </div>
 
