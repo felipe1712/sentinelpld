@@ -7,7 +7,7 @@
         <div class="col-12 d-flex justify-content-between align-items-center">
             <div>
                 <h4 class="main-title">Insumos para Auditoría y EBR Institucional (M3 / M8)</h4>
-                <p class="text-muted">Vista de solo lectura (Art. 45 / Art. 47). Cada consulta queda registrada en bitácora.</p>
+                <p class="text-muted">Vista de solo lectura (Art. 44 / Art. 45 / Art. 47). Cada consulta queda registrada en bitácora.</p>
             </div>
             <a href="{{ route('atestia.auditoria.index', ['export_json' => 1]) }}" class="btn btn-outline-primary btn-sm">
                 <i class="ti ti-download me-1"></i> Exportar Paquete JSON
@@ -32,11 +32,44 @@
                 <div class="card-body">
                     <span class="text-muted f-s-13">Auditoría Aplicable</span>
                     <h5 class="mt-2 mb-1">{{ $ebrInstitucional['auditoria_aplicable'] }}</h5>
-                    <small class="text-muted">Actos últimos 12m: {{ $ebrInstitucional['total_actos_12m'] }} · Corte desde: {{ $ebrInstitucional['corte_desde'] }}</small>
+                    <small class="text-muted d-block">Actos últimos 12m: {{ $ebrInstitucional['total_actos_12m'] }} · Corte desde: {{ $ebrInstitucional['corte_desde'] }}</small>
+                    @if(!empty($ebrInstitucional['criterio_auditoria']))
+                        <small class="text-info d-block mt-1">{{ $ebrInstitucional['criterio_auditoria'] }}</small>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
+
+    @if(!empty($ebrInstitucional['desglose']))
+    <div class="card mb-3">
+        <div class="card-header"><h5 class="mb-0">Sustento del Cálculo EBR Institucional (Corte: {{ $ebrInstitucional['corte_desde'] }} a {{ date('Y-m-d') }})</h5></div>
+        <div class="card-body table-responsive">
+            <table class="table table-sm align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Elemento</th>
+                        <th>Valor (0–100)</th>
+                        <th>Peso</th>
+                        <th>Aporte</th>
+                        <th>Fuente de Datos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($ebrInstitucional['desglose'] as $item)
+                        <tr>
+                            <td><strong>{{ $item['elemento'] }}</strong></td>
+                            <td>{{ number_format($item['valor'], 2) }}</td>
+                            <td>{{ $item['peso'] * 100 }}%</td>
+                            <td><strong>{{ number_format($item['aporte'], 2) }} pts</strong></td>
+                            <td class="text-muted f-s-12">{{ $item['fuente'] }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @endif
 
     <div class="card">
         <div class="card-header"><h5 class="mb-0">Bitácora Inmutable de Accesos (últimos 30)</h5></div>

@@ -75,6 +75,39 @@ class AtestiaNotariaEbrService
                 'exposicion_geografica' => $exposicionGeografica,
                 'canales_y_pagos'       => $canalesYPagos,
             ],
+            'desglose' => [
+                [
+                    'elemento' => 'Mezcla de Actos (30%)',
+                    'valor'    => $mezclaActos,
+                    'peso'     => 0.30,
+                    'aporte'   => round(0.30 * $mezclaActos, 2),
+                    'fuente'   => "{$actosSiempreAviso} de {$actos->count()} actos con aviso obligatorio (A-b, A-c, A-e)",
+                ],
+                [
+                    'elemento' => 'Mezcla de Clientes (30%)',
+                    'valor'    => $mezclaClientes,
+                    'peso'     => 0.30,
+                    'aporte'   => round(0.30 * $mezclaClientes, 2),
+                    'fuente'   => "{$clientesAlto} de {$grados->count()} evaluaciones en grado ALTO (últimos 12m)",
+                ],
+                [
+                    'elemento' => 'Exposición Geográfica (20%)',
+                    'valor'    => $exposicionGeografica,
+                    'peso'     => 0.20,
+                    'aporte'   => round(0.20 * $exposicionGeografica, 2),
+                    'fuente'   => 'Base parametrizada por entidad federativa (' . ($notaria->entidad_federativa ?? 'N/D') . ')',
+                ],
+                [
+                    'elemento' => 'Canales y Pagos en Efectivo (20%)',
+                    'valor'    => $canalesYPagos,
+                    'peso'     => 0.20,
+                    'aporte'   => round(0.20 * $canalesYPagos, 2),
+                    'fuente'   => "{$pagosEfectivoBloqueados} intentos de pago bloqueados Art. 32 (25 pts c/u, máx. 100)",
+                ],
+            ],
+            'criterio_auditoria' => $nivel === 'ALTO'
+                ? 'Art. 45 LFPIORPI: Nivel de riesgo ALTO requiere Auditor Externo Independiente Certificado por la UIF (sin conflicto de interés ni prestación previa de servicios de cumplimiento/asesoría PLD a la notaría).'
+                : 'Art. 44 LFPIORPI: Nivel de riesgo BAJO o MEDIO permite Auditoría Interna o Externa anual. En caso de optar por auditor externo, aplica la regla de independencia y ausencia de conflicto de interés del Art. 45.',
         ];
     }
 }

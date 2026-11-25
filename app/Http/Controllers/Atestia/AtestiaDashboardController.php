@@ -27,7 +27,7 @@ class AtestiaDashboardController extends Controller
             'avisos_pendientes' => $user->can('atestia.avisos.ver')
                 ? AtestiaAviso::whereIn('estado', ['borrador', 'pendiente_de_formato', 'listo_para_presentar'])->count()
                 : null,
-            'uma_vigente'      => AtestiaParametro::getValor('uma_diaria_mxn', 113.14),
+            'uma_vigente'      => AtestiaParametro::getValor('uma_diaria_mxn', 117.31, now()),
             'anexo_12a'        => AtestiaParametro::getValor('anexo_12a_actualizado', 'desconocido'),
         ];
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Atestia;
 
 use App\Http\Controllers\Controller;
+use App\Models\AtestiaActo;
 use App\Models\AtestiaAviso;
 use App\Services\Pld\PldCryptoService;
 use Illuminate\Http\Request;
@@ -12,7 +13,18 @@ class AtestiaAvisoController extends Controller
     public function index()
     {
         $avisos = AtestiaAviso::orderBy('fecha_limite')->paginate(20);
-        return view('atestia.avisos.index', compact('avisos'));
+
+        $allActoIds = $avisos->getCollection()
+            ->flatMap(fn ($a) => (array) $a->acto_ids)
+            ->unique()
+            ->values();
+
+        $actosById = AtestiaActo::with('partes.cliente')
+            ->whereIn('id', $allActoIds)
+            ->get()
+            ->keyBy('id');
+
+        return view('atestia.avisos.index', compact('avisos', 'actosById'));
     }
 
     public function registerAcuse(Request $request, string $id, PldCryptoService $crypto)

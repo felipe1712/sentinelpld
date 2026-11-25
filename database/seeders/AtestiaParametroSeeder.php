@@ -12,7 +12,10 @@ class AtestiaParametroSeeder extends Seeder
         $now = now();
         foreach (config('atestia.parametros_default', []) as $param) {
             DB::table('atestia_parametros')->updateOrInsert(
-                ['clave' => $param['clave']],
+                [
+                    'clave'         => $param['clave'],
+                    'vigente_desde' => $param['vigente_desde'],
+                ],
                 array_merge($param, [
                     'created_at' => $now,
                     'updated_at' => $now,

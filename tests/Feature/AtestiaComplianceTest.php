@@ -186,24 +186,24 @@ class AtestiaComplianceTest extends TestCase
         $notarioRole = Role::findByName('notario', 'web');
         $this->assertTrue($notarioRole->hasPermissionTo('atestia.acuses.ver'));
 
-        $colaboradorUser = \App\Models\User::factory()->create(['tenant_id' => $this->tenant->id, 'avatar' => 'avatar-1.jpg']);
+        $colaboradorUser = \App\Models\User::factory()->create(['tenant_id' => $this->tenant->id, 'avatar' => 'avatar-1.jpg', 'must_change_password' => false]);
         $colaboradorUser->assignRole('colaborador');
-        $this->actingAs($colaboradorUser)->get('/atestia/avisos')->assertStatus(403);
-        $this->actingAs($colaboradorUser)->get('/atestia/dashboard')->assertStatus(200);
+        $this->actingAs($colaboradorUser)->get('/app/avisos')->assertStatus(403);
+        $this->actingAs($colaboradorUser)->get('/app/dashboard')->assertStatus(200);
 
-        $notarioUser = \App\Models\User::factory()->create(['tenant_id' => $this->tenant->id, 'avatar' => 'avatar-1.jpg']);
+        $notarioUser = \App\Models\User::factory()->create(['tenant_id' => $this->tenant->id, 'avatar' => 'avatar-1.jpg', 'must_change_password' => false]);
         $notarioUser->assignRole('notario');
-        $this->actingAs($notarioUser)->get('/atestia/avisos')->assertStatus(200);
+        $this->actingAs($notarioUser)->get('/app/avisos')->assertStatus(200);
     }
 
     /** T11 + T13: Auditor solo lectura registra acceso en bitácora y EBR <12m marca datos_proyectados */
     public function test_t11_t13_auditor_access_is_logged_and_ebr_marks_projected_data(): void
     {
-        $auditorUser = \App\Models\User::factory()->create(['tenant_id' => $this->tenant->id, 'avatar' => 'avatar-1.jpg']);
+        $auditorUser = \App\Models\User::factory()->create(['tenant_id' => $this->tenant->id, 'avatar' => 'avatar-1.jpg', 'must_change_password' => false]);
         $auditorUser->assignRole('auditor_ro');
 
-        $this->actingAs($auditorUser)->get('/atestia/auditoria')->assertStatus(200);
-        $this->actingAs($auditorUser)->get('/atestia/avisos')->assertStatus(403);
+        $this->actingAs($auditorUser)->get('/app/auditoria')->assertStatus(200);
+        $this->actingAs($auditorUser)->get('/app/avisos')->assertStatus(403);
 
         $this->assertDatabaseHas('atestia_bitacora_accesos', [
             'usuario_id'  => $auditorUser->id,
@@ -218,10 +218,10 @@ class AtestiaComplianceTest extends TestCase
     /** Multi-tenant: super_admin crea notaría + administrador, y administrador crea operador aislado */
     public function test_multitenant_superadmin_and_client_profiles(): void
     {
-        $super = \App\Models\User::factory()->create(['tenant_id' => null, 'avatar' => 'avatar-1.jpg']);
+        $super = \App\Models\User::factory()->create(['tenant_id' => null, 'avatar' => 'avatar-1.jpg', 'must_change_password' => false]);
         $super->assignRole('super_admin');
 
-        $this->actingAs($super)->post('/atestia/admin/notarias', [
+        $this->actingAs($super)->post('/app/admin/notarias', [
             'nombre_comercial'   => 'Notaría 99',
             'rfc'                => 'NPN990101AAA',
             'titular'            => 'Lic. Ana Ruiz',
@@ -229,50 +229,53 @@ class AtestiaComplianceTest extends TestCase
             'perfil_servicio'    => 'pro',
             'admin_name'         => 'Admin 99',
             'admin_email'        => 'admin99@sentinelpld.mx',
-            'admin_password'     => 'Secret1234',
-        ])->assertRedirect('/atestia/admin/notarias');
+            'admin_password'     => 'Secret1234!@',
+        ])->assertRedirect('/app/admin/notarias');
 
         $admin99 = \App\Models\User::where('email', 'admin99@sentinelpld.mx')->firstOrFail();
         $this->assertTrue($admin99->hasRole('administrador'));
+        $admin99->update(['must_change_password' => false]);
 
         // Administrador de cliente NO puede acceder a administración global de notarías
-        $this->actingAs($admin99)->get('/atestia/admin/notarias')->assertStatus(403);
+        $this->actingAs($admin99)->get('/app/admin/notarias')->assertStatus(403);
 
         // Administrador crea Operador en su propio tenant
-        $this->actingAs($admin99)->post('/atestia/usuarios', [
+        $this->actingAs($admin99)->post('/app/usuarios', [
             'name'     => 'Operador 99',
             'email'    => 'op99@sentinelpld.mx',
-            'password' => 'Secret1234',
+            'password' => 'Secret1234!@',
             'role'     => 'operador',
-        ])->assertRedirect('/atestia/usuarios');
+        ])->assertRedirect('/app/usuarios');
 
         $op99 = \App\Models\User::where('email', 'op99@sentinelpld.mx')->firstOrFail();
         $this->assertEquals($admin99->tenant_id, $op99->tenant_id);
-        $this->actingAs($op99)->get('/atestia/avisos')->assertStatus(403);
-        $this->actingAs($op99)->get('/atestia/dashboard')->assertStatus(200);
+        $this->assertTrue($op99->must_change_password);
+        $op99->update(['must_change_password' => false]);
+        $this->actingAs($op99)->get('/app/avisos')->assertStatus(403);
+        $this->actingAs($op99)->get('/app/dashboard')->assertStatus(200);
 
         // Super Admin tiene su propio dashboard y configuración Brevo cifrada; cliente recibe 403
-        $this->actingAs($super)->get('/atestia/admin/dashboard')->assertStatus(200);
-        $this->actingAs($admin99)->get('/atestia/admin/dashboard')->assertStatus(403);
-        $this->actingAs($admin99)->get('/atestia/admin/configuracion')->assertStatus(403);
+        $this->actingAs($super)->get('/app/admin/dashboard')->assertStatus(200);
+        $this->actingAs($admin99)->get('/app/admin/dashboard')->assertStatus(403);
+        $this->actingAs($admin99)->get('/app/admin/configuracion')->assertStatus(403);
 
-        $this->actingAs($super)->post('/atestia/admin/configuracion/brevo', [
+        $this->actingAs($super)->post('/app/admin/configuracion/brevo', [
             'brevo_enabled'      => 1,
             'brevo_api_key'      => 'xkeysib-test-secret',
             'brevo_sender_email' => 'notificaciones@sentinelpld.mx',
             'brevo_sender_name'  => 'Sentinel PLD',
-        ])->assertRedirect('/atestia/admin/configuracion');
+        ])->assertRedirect('/app/admin/configuracion');
 
         $this->assertEquals('xkeysib-test-secret', \App\Models\SentinelSystemSetting::getValue('brevo_api_key'));
 
         // Administrador puede cambiar contraseña y eliminar operador de su propio tenant, pero NO al super_admin
-        $this->actingAs($admin99)->patch("/atestia/usuarios/{$op99->id}/password", [
-            'password' => 'NewSecret123',
-        ])->assertRedirect('/atestia/usuarios');
-        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('NewSecret123', $op99->fresh()->password));
+        $this->actingAs($admin99)->patch("/app/usuarios/{$op99->id}/password", [
+            'password' => 'NewSecret123!@',
+        ])->assertRedirect('/app/usuarios');
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('NewSecret123!@', $op99->fresh()->password));
 
-        $this->actingAs($admin99)->delete("/atestia/usuarios/{$super->id}")->assertStatus(403);
-        $this->actingAs($admin99)->delete("/atestia/usuarios/{$op99->id}")->assertRedirect('/atestia/usuarios');
+        $this->actingAs($admin99)->delete("/app/usuarios/{$super->id}")->assertStatus(403);
+        $this->actingAs($admin99)->delete("/app/usuarios/{$op99->id}")->assertRedirect('/app/usuarios');
         $this->assertDatabaseMissing('users', ['id' => $op99->id]);
     }
 }

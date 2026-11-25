@@ -10,7 +10,7 @@ class AtestiaAlertaController extends Controller
 {
     public function index()
     {
-        $alertas = AtestiaAlerta::latest()->paginate(20);
+        $alertas = AtestiaAlerta::with(['acto', 'cliente'])->latest()->paginate(20);
         return view('atestia.alertas.index', compact('alertas'));
     }
 
@@ -21,6 +21,9 @@ class AtestiaAlertaController extends Controller
         $data = $request->validate([
             'estado'           => 'required|in:descartada,escalada,aviso',
             'analisis_escrito' => 'required|string|min:10',
+        ], [
+            'analisis_escrito.required' => 'El análisis escrito es obligatorio para cerrar la alerta.',
+            'analisis_escrito.min'      => 'El análisis escrito debe tener al menos 10 caracteres.',
         ]);
 
         $alerta->update([

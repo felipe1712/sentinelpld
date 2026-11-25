@@ -18,16 +18,38 @@
                         <th>Tipo</th>
                         <th>Canal</th>
                         <th>Fecha Límite</th>
+                        <th>Actos Incluidos</th>
                         <th>Estado</th>
                         <th>Folio / Acuse</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($avisos as $aviso)
+                        @php
+                            $actosAviso = collect((array) $aviso->acto_ids)
+                                ->map(fn ($aid) => $actosById->get($aid))
+                                ->filter();
+                        @endphp
                         <tr>
                             <td>{{ strtoupper($aviso->tipo) }}</td>
                             <td><span class="badge bg-info">{{ strtoupper($aviso->canal) }}</span></td>
                             <td><strong>{{ $aviso->fecha_limite?->format('Y-m-d') }}</strong></td>
+                            <td>
+                                @if($actosAviso->isNotEmpty())
+                                    <ul class="list-unstyled mb-0 f-s-12">
+                                        @foreach($actosAviso as $a)
+                                            <li>
+                                                <a href="{{ route('atestia.actos.index') }}">
+                                                    {{ $a->instrumento_no ?? 'S/N' }}
+                                                </a>
+                                                ({{ $a->apartado }}-{{ $a->tipo_inciso }} · {{ number_format($a->valor_en_umas, 2) }} UMA)
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                @else
+                                    <span class="text-muted f-s-12">Sin actos enlazados</span>
+                                @endif
+                            </td>
                             <td>
                                 <span class="badge {{ $aviso->estado === 'pendiente_de_formato' ? 'bg-warning text-dark' : 'bg-primary' }}">
                                     {{ $aviso->estado }}

@@ -26,6 +26,12 @@ class User extends Authenticatable
         'avatar',
         'tenant_id',
         'activo',
+        'must_change_password',
+        'failed_login_attempts',
+        'locked_until',
+        'mfa_enabled',
+        'mfa_code',
+        'mfa_expires_at',
     ];
 
     /**
@@ -54,5 +60,9 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'activo' => 'boolean',
+        'must_change_password' => 'boolean',
+        'mfa_enabled' => 'boolean',
+        'locked_until' => 'datetime',
+        'mfa_expires_at' => 'datetime',
     ];
 }

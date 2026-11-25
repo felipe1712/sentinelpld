@@ -7,6 +7,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 class AtestiaUsuarioController extends Controller
 {
@@ -38,9 +39,11 @@ class AtestiaUsuarioController extends Controller
         $data = $request->validate([
             'name'      => 'required|string|max:255',
             'email'     => 'required|email|unique:users,email',
-            'password'  => 'required|string|min:8',
+            'password'  => ['required', 'string', Password::min(12)->mixedCase()->numbers()->symbols()],
             'role'      => "required|in:{$allowedRoles}",
             'tenant_id' => $isSuper ? 'nullable|exists:tenants,id' : 'nullable',
+        ], [
+            'password.min' => 'La contraseña debe tener al menos 12 caracteres, incluyendo mayúsculas, minúsculas, números y símbolos.',
         ]);
 
         if ($isSuper && $data['role'] !== 'super_admin' && empty($data['tenant_id'])) {
@@ -52,18 +55,20 @@ class AtestiaUsuarioController extends Controller
             : $authUser->tenant_id;
 
         $user = User::create([
-            'name'      => $data['name'],
-            'email'     => $data['email'],
-            'password'  => Hash::make($data['password']),
-            'tenant_id' => $tenantId,
-            'avatar'    => 'avatar-1.jpg',
-            'activo'    => true,
+            'name'                 => $data['name'],
+            'email'                => $data['email'],
+            'password'             => Hash::make($data['password']),
+            'tenant_id'            => $tenantId,
+            'avatar'               => 'avatar-1.jpg',
+            'activo'               => true,
+            'must_change_password' => true,
+            'mfa_enabled'          => ! empty($request->boolean('mfa_enabled', true)),
         ]);
 
         $user->assignRole($data['role']);
 
         return redirect()->route('atestia.usuarios.index')
-            ->with('success', "Usuario {$user->email} creado con perfil {$data['role']}.");
+            ->with('success', "Usuario {$user->email} creado con perfil {$data['role']}. Se exigirá cambio de contraseña en su primer inicio.");
     }
 
     public function toggle(int $id)
@@ -87,11 +92,12 @@ class AtestiaUsuarioController extends Controller
         $target = $this->authorizeTarget($authUser, $id);
 
         $data = $request->validate([
-            'password' => 'required|string|min:8',
+            'password' => ['required', 'string', Password::min(12)->mixedCase()->numbers()->symbols()],
         ]);
 
         $target->update([
-            'password' => Hash::make($data['password']),
+            'password'             => Hash::make($data['password']),
+            'must_change_password' => true,
         ]);
 
         return redirect()->route('atestia.usuarios.index')

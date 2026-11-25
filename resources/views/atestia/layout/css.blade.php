@@ -28,3 +28,15 @@
 @yield('css')
 
 @vite(['public/assets/scss/style.scss'])
+
+<style>
+    @media (max-width: 1199.98px) {
+        nav .app-nav {
+            overflow-y: auto !important;
+            max-height: calc(100vh - 80px);
+        }
+        nav .main-nav li {
+            display: block !important;
+        }
+    }
+</style>

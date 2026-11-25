@@ -10,9 +10,6 @@
 <!-- phosphor js -->
 <script src="{{asset('assets/vendor/phosphor/phosphor.js')}}"></script>
 
-<!-- Customizer js-->
-<script src="{{asset('assets/js/customizer.js')}}"></script>
-
 <!-- prism js-->
 <script src="{{asset('assets/vendor/prism/prism.min.js')}}"></script>
 

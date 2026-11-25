@@ -49,7 +49,7 @@
                                         <form method="POST" action="{{ route('atestia.usuarios.password', $u->id) }}" class="d-flex gap-1">
                                             @csrf
                                             @method('PATCH')
-                                            <input type="password" name="password" class="form-control form-control-sm" placeholder="Nueva (mín. 8)" minlength="8" required style="width:145px">
+                                            <input type="password" name="password" class="form-control form-control-sm" placeholder="Mín. 12 car. (Aa1!)" minlength="12" required style="width:165px">
                                             <button type="submit" class="btn btn-sm btn-outline-primary">Guardar</button>
                                         </form>
                                     </td>

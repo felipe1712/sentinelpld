@@ -69,5 +69,6 @@ class Kernel extends HttpKernel
         'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
         'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         'tenant.apikey' => \App\Http\Middleware\AuthenticateTenantApiKey::class,
+        'password.changed' => \App\Http\Middleware\EnsurePasswordChanged::class,
     ];
 }

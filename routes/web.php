@@ -11,6 +11,13 @@ use Illuminate\Support\Facades\Auth;
 
 Auth::routes();
 
+Route::get('/mfa-verify', [App\Http\Controllers\Auth\MfaController::class, 'showMfaForm'])->name('mfa.show');
+Route::post('/mfa-verify', [App\Http\Controllers\Auth\MfaController::class, 'verifyMfa'])->name('mfa.verify');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/change-password-required', [App\Http\Controllers\Auth\MfaController::class, 'showForcePasswordForm'])->name('password.force.show');
+    Route::post('/change-password-required', [App\Http\Controllers\Auth\MfaController::class, 'updateForcePassword'])->name('password.force.update');
+});
+
 // Super Admin Panel Routes
 Route::middleware(['auth', 'role:super_admin'])->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\SuperAdminController::class, 'dashboard'])->name('dashboard');
@@ -89,14 +96,20 @@ Route::middleware(['auth', 'role:tenant_admin|investigador'])->prefix('tenant')-
 });
 
 // ─────────────────────────────────────────────────────────
-// RUTAS ATESTIA — Cumplimiento LFPIORPI (Notarías & Corredores)
+// RUTAS SENTINEL PLD (/app) — Redirección 301 desde /atestia
 // ─────────────────────────────────────────────────────────
-Route::middleware(['auth'])->prefix('atestia')->name('atestia.')->group(function () {
+Route::any('/atestia/{any?}', function (?string $any = null) {
+    $target = '/app' . ($any ? '/' . ltrim($any, '/') : '');
+    return redirect($target, 301);
+})->where('any', '.*');
+
+Route::middleware(['auth', 'password.changed'])->prefix('app')->name('atestia.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Atestia\AtestiaDashboardController::class, 'index'])->name('dashboard');
 
     Route::middleware(['permission:atestia.actos.registrar'])->group(function () {
         Route::get('/actos', [App\Http\Controllers\Atestia\AtestiaActoController::class, 'index'])->name('actos.index');
         Route::post('/actos', [App\Http\Controllers\Atestia\AtestiaActoController::class, 'store'])->name('actos.store');
+        Route::post('/actos/{id}/confirm', [App\Http\Controllers\Atestia\AtestiaActoController::class, 'confirm'])->name('actos.confirm');
         Route::post('/actos/{id}/pagos', [App\Http\Controllers\Atestia\AtestiaActoController::class, 'storePago'])->name('actos.pagos.store');
     });
 
@@ -105,6 +118,12 @@ Route::middleware(['auth'])->prefix('atestia')->name('atestia.')->group(function
         Route::post('/clientes', [App\Http\Controllers\Atestia\AtestiaClienteController::class, 'store'])
             ->middleware('permission:atestia.expedientes.editar')
             ->name('clientes.store');
+        Route::put('/clientes/{id}', [App\Http\Controllers\Atestia\AtestiaClienteController::class, 'update'])
+            ->middleware('permission:atestia.expedientes.editar')
+            ->name('clientes.update');
+        Route::delete('/clientes/{id}', [App\Http\Controllers\Atestia\AtestiaClienteController::class, 'destroy'])
+            ->middleware('permission:atestia.expedientes.editar')
+            ->name('clientes.destroy');
     });
 
     Route::middleware(['permission:atestia.alertas.revisar'])->group(function () {

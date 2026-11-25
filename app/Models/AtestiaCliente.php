@@ -32,4 +32,14 @@ class AtestiaCliente extends Model
     {
         return $this->hasMany(AtestiaPersonaRelacionada::class, 'cliente_id');
     }
+
+    public function gradosRiesgo(): HasMany
+    {
+        return $this->hasMany(AtestiaGradoRiesgo::class, 'cliente_id');
+    }
+
+    public function ultimoGradoRiesgo()
+    {
+        return $this->hasOne(AtestiaGradoRiesgo::class, 'cliente_id')->latestOfMany('calculado_en');
+    }
 }

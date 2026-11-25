@@ -10,12 +10,15 @@ use Illuminate\Support\Facades\DB;
 class ActoThresholdAndAccumulationService
 {
     /**
-     * Calcula el monto computable, su equivalente en UMAs y determina si
-     * el acto genera obligación de aviso por sí mismo o por acumulación (6 meses).
+     * Calcula el monto computable, su equivalente en UMAs según la fecha de
+     * otorgamiento y determina si el acto genera obligación de aviso por sí mismo
+     * o por acumulación (6 meses).
      */
     public function evaluateActo(AtestiaActo $acto): array
     {
-        $umaValor = (float) AtestiaParametro::getValor('uma_diaria_mxn', 113.14);
+        $fechaOtorgamiento = Carbon::parse($acto->fecha_otorgamiento);
+        $umaValor = (float) AtestiaParametro::getValor('uma_diaria_mxn', 117.31, $fechaOtorgamiento);
+
         $baseMax = max(
             (float) $acto->valor_precio,
             (float) $acto->valor_catastral,
@@ -35,21 +38,21 @@ class ActoThresholdAndAccumulationService
 
         $regla = config("atestia.catalogo_actos.{$acto->apartado}.{$acto->tipo_inciso}");
         if (! $regla || $acto->excepcion_financiera) {
-            return $this->result($umas, false, false, false, null);
+            return $this->result($umas, false, false, false, null, $umaValor, null, $acto);
         }
 
         // B-a (Corredores): solo aplica si se utiliza fe pública en el avalúo (Reglamento Art. 29)
         if ($acto->apartado === 'B' && $acto->tipo_inciso === 'a' && ! $acto->fe_publica_en_avaluo) {
-            return $this->result($umas, false, false, false, null);
+            return $this->result($umas, false, false, false, null, $umaValor, null, $acto);
         }
 
         if ($regla['siempre_aviso']) {
-            return $this->result($umas, true, false, false, $regla['canal']);
+            return $this->result($umas, true, false, false, $regla['canal'], $umaValor, 0.0, $acto);
         }
 
-        $umbralUmas = (float) AtestiaParametro::getValor($regla['umbral_clave'], 0);
+        $umbralUmas = (float) AtestiaParametro::getValor($regla['umbral_clave'], 0, $fechaOtorgamiento);
         if ($umbralUmas > 0 && $umas >= $umbralUmas) {
-            return $this->result($umas, true, false, false, $regla['canal']);
+            return $this->result($umas, true, false, false, $regla['canal'], $umaValor, $umbralUmas, $acto);
         }
 
         // Zona de posible fraccionamiento (80% a 99% del umbral) -> Alerta A06
@@ -61,7 +64,7 @@ class ActoThresholdAndAccumulationService
             $acumulaAlcanza = $this->checkSixMonthAccumulation($acto, $umbralUmas, $umaValor);
         }
 
-        return $this->result($umas, $acumulaAlcanza, $acumulaAlcanza, $cercaUmbral, $regla['canal']);
+        return $this->result($umas, $acumulaAlcanza, $acumulaAlcanza, $cercaUmbral, $regla['canal'], $umaValor, $umbralUmas, $acto);
     }
 
     protected function checkSixMonthAccumulation(AtestiaActo $acto, float $umbralUmas, float $umaValor): bool
@@ -103,14 +106,27 @@ class ActoThresholdAndAccumulationService
         bool $requiereAviso,
         bool $porAcumulacion,
         bool $cercaUmbral,
-        ?string $canal
+        ?string $canal,
+        float $umaAplicada,
+        ?float $umbralAplicableUmas,
+        AtestiaActo $acto
     ): array {
+        $fechaLimite = null;
+        if ($requiereAviso) {
+            $fechaActo = Carbon::parse($acto->fecha_protocolizacion ?? $acto->fecha_otorgamiento);
+            $fechaLimite = $fechaActo->copy()->addMonthNoOverflow()->day(17)->toDateString();
+        }
+
         return [
-            'valor_en_umas'   => $umas,
-            'requiere_aviso'  => $requiereAviso,
-            'por_acumulacion' => $porAcumulacion,
-            'cerca_umbral'    => $cercaUmbral,
-            'canal'           => $canal,
+            'valor_en_umas'         => $umas,
+            'uma_aplicada'          => $umaAplicada,
+            'umbral_aplicable_umas' => $umbralAplicableUmas,
+            'inciso'                => "{$acto->apartado}-{$acto->tipo_inciso}",
+            'requiere_aviso'        => $requiereAviso,
+            'por_acumulacion'       => $porAcumulacion,
+            'cerca_umbral'          => $cercaUmbral,
+            'canal'                 => $canal,
+            'fecha_limite_aviso'    => $fechaLimite,
         ];
     }
 }
