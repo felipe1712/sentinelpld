@@ -62,7 +62,7 @@ class AtestiaUsuarioController extends Controller
             'avatar'               => 'avatar-1.jpg',
             'activo'               => true,
             'must_change_password' => true,
-            'mfa_enabled'          => ! empty($request->boolean('mfa_enabled', true)),
+            'mfa_enabled'          => $request->boolean('mfa_enabled', false),
         ]);
 
         $user->assignRole($data['role']);
@@ -84,6 +84,24 @@ class AtestiaUsuarioController extends Controller
 
         return redirect()->route('atestia.usuarios.index')
             ->with('success', 'Estado del usuario actualizado.');
+    }
+
+    public function toggleMfa(int $id)
+    {
+        $authUser = auth()->user();
+        $target = $this->authorizeTarget($authUser, $id);
+
+        $nuevoEstado = ! $target->mfa_enabled;
+        $target->update([
+            'mfa_enabled'    => $nuevoEstado,
+            'mfa_code'       => $nuevoEstado ? $target->mfa_code : null,
+            'mfa_expires_at' => $nuevoEstado ? $target->mfa_expires_at : null,
+        ]);
+
+        $estadoTxt = $nuevoEstado ? 'activado' : 'desactivado';
+
+        return redirect()->route('atestia.usuarios.index')
+            ->with('success', "Doble factor (MFA por correo) {$estadoTxt} para {$target->email}.");
     }
 
     public function updatePassword(Request $request, int $id)

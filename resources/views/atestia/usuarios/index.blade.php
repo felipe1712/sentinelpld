@@ -27,6 +27,7 @@
                                 @endif
                                 <th>Perfil</th>
                                 <th>Estado</th>
+                                <th>MFA (Correo)</th>
                                 <th>Cambiar Contraseña</th>
                                 <th>Acciones</th>
                             </tr>
@@ -44,6 +45,21 @@
                                         <span class="badge {{ $u->activo ? 'bg-success' : 'bg-danger' }}">
                                             {{ $u->activo ? 'Activo' : 'Inactivo' }}
                                         </span>
+                                    </td>
+                                    <td>
+                                        <form method="POST" action="{{ route('atestia.usuarios.mfa', $u->id) }}">
+                                            @csrf
+                                            @method('PATCH')
+                                            <div class="form-check form-switch m-0">
+                                                <input class="form-check-input" type="checkbox" role="switch"
+                                                       id="mfaSwitch{{ $u->id }}"
+                                                       {{ $u->mfa_enabled ? 'checked' : '' }}
+                                                       onchange="this.form.submit()">
+                                                <label class="form-check-label f-s-12" for="mfaSwitch{{ $u->id }}">
+                                                    {{ $u->mfa_enabled ? 'Sí' : 'No' }}
+                                                </label>
+                                            </div>
+                                        </form>
                                     </td>
                                     <td>
                                         <form method="POST" action="{{ route('atestia.usuarios.password', $u->id) }}" class="d-flex gap-1">
@@ -77,7 +93,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="{{ $isSuper ? 7 : 6 }}" class="text-center text-muted">Sin usuarios registrados.</td>
+                                    <td colspan="{{ $isSuper ? 8 : 7 }}" class="text-center text-muted">Sin usuarios registrados.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -132,8 +148,14 @@
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Contraseña (mín. 8 caracteres)</label>
-                                <input type="password" name="password" class="form-control" minlength="8" required>
+                                <label class="form-label">Contraseña (mín. 12 car., Aa1!)</label>
+                                <input type="password" name="password" class="form-control" minlength="12" required>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-center">
+                                <div class="form-check form-switch mt-3">
+                                    <input class="form-check-input" type="checkbox" role="switch" name="mfa_enabled" value="1" id="newMfaSwitch">
+                                    <label class="form-check-label" for="newMfaSwitch">Enviar código MFA por correo al iniciar sesión</label>
+                                </div>
                             </div>
                             <div class="col-md-4 d-flex align-items-end">
                                 <button type="submit" class="btn btn-primary w-100">Crear Usuario</button>

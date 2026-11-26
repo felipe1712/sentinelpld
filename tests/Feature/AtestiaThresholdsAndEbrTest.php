@@ -200,4 +200,26 @@ class AtestiaThresholdsAndEbrTest extends TestCase
             ])
             ->assertSessionHasErrors('password');
     }
+
+    public function test_f20_toggle_mfa_per_user(): void
+    {
+        $user = User::factory()->create([
+            'tenant_id'            => $this->tenant->id,
+            'avatar'               => 'avatar-1.jpg',
+            'must_change_password' => false,
+            'mfa_enabled'          => false,
+        ]);
+
+        $this->actingAs($this->notario)
+            ->patch("/app/usuarios/{$user->id}/mfa")
+            ->assertRedirect('/app/usuarios');
+
+        $this->assertTrue((bool) $user->fresh()->mfa_enabled);
+
+        $this->actingAs($this->notario)
+            ->patch("/app/usuarios/{$user->id}/mfa")
+            ->assertRedirect('/app/usuarios');
+
+        $this->assertFalse((bool) $user->fresh()->mfa_enabled);
+    }
 }
