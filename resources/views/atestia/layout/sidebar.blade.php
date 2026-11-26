@@ -12,7 +12,7 @@
     <div class="app-nav" id="app-simple-bar">
         <ul class="main-nav p-0 mt-2">
             @if(auth()->user()?->hasRole('super_admin'))
-                <li class="menu-title">
+                <li class="menu-title {{ request()->routeIs('atestia.admin.dashboard', 'atestia.admin.notarias.*', 'atestia.usuarios.*') ? 'section-active' : '' }}">
                     <span>Plataforma</span>
                 </li>
                 <li class="no-sub">
@@ -35,7 +35,7 @@
                 </li>
 
                 <li class="sentinel-menu-divider" aria-hidden="true"></li>
-                <li class="menu-title">
+                <li class="menu-title {{ request()->routeIs('atestia.admin.configuracion.*', 'atestia.parametros.*') ? 'section-active' : '' }}">
                     <span>Sistema</span>
                 </li>
                 <li class="no-sub">
@@ -51,7 +51,7 @@
                     </a>
                 </li>
             @else
-                <li class="menu-title">
+                <li class="menu-title {{ request()->routeIs('atestia.dashboard') ? 'section-active' : '' }}">
                     <span>Principal</span>
                 </li>
                 <li class="no-sub">
@@ -62,7 +62,7 @@
                 </li>
 
                 <li class="sentinel-menu-divider" aria-hidden="true"></li>
-                <li class="menu-title">
+                <li class="menu-title {{ request()->routeIs('atestia.actos.*', 'atestia.clientes.*') ? 'section-active' : '' }}">
                     <span>Operación</span>
                 </li>
                 <li class="no-sub">
@@ -80,7 +80,7 @@
 
                 @if(auth()->user()?->can('atestia.alertas.revisar') || auth()->user()?->can('atestia.avisos.ver'))
                     <li class="sentinel-menu-divider" aria-hidden="true"></li>
-                    <li class="menu-title">
+                    <li class="menu-title {{ request()->routeIs('atestia.alertas.*', 'atestia.avisos.*') ? 'section-active' : '' }}">
                         <span>Monitoreo</span>
                     </li>
                 @endif
@@ -105,7 +105,7 @@
 
                 @if(auth()->user()?->can('atestia.auditoria.exportar') || auth()->user()?->can('atestia.parametros.editar'))
                     <li class="sentinel-menu-divider" aria-hidden="true"></li>
-                    <li class="menu-title">
+                    <li class="menu-title {{ request()->routeIs('atestia.auditoria.*', 'atestia.cumplimiento.*') ? 'section-active' : '' }}">
                         <span>Gobierno</span>
                     </li>
                 @endif
@@ -130,7 +130,7 @@
 
                 @can('atestia.usuarios.gestionar')
                     <li class="sentinel-menu-divider" aria-hidden="true"></li>
-                    <li class="menu-title">
+                    <li class="menu-title {{ request()->routeIs('atestia.usuarios.*') ? 'section-active' : '' }}">
                         <span>Configuración</span>
                     </li>
                     <li class="no-sub">
